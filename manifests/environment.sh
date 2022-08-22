@@ -4,16 +4,16 @@
 export ENCRYPTION_KEY=$(head -c 32 /dev/urandom | base64)
 
 # 集群各机器 IP 数组
-export NODE_IPS=(172.27.138.251 172.27.137.229 172.27.138.239)
+export NODE_IPS=(10.0.0.5 10.0.0.12 10.0.0.8)
 
 # 集群各 IP 对应的主机名数组
-export NODE_NAMES=(zhangjun-k8s-01 zhangjun-k8s-02 zhangjun-k8s-03)
+export NODE_NAMES=(wls-k8s-01 wls-k8s-02 wls-k8s-03)
 
 # etcd 集群服务地址列表
-export ETCD_ENDPOINTS="https://172.27.138.251:2379,https://172.27.137.229:2379,https://172.27.138.239:2379"
+export ETCD_ENDPOINTS="https://10.0.0.5:2379,https://10.0.0.12:2379,https://10.0.0.8:2379"
 
 # etcd 集群间通信的 IP 和端口
-export ETCD_NODES="zhangjun-k8s-01=https://172.27.138.251:2380,zhangjun-k8s-02=https://172.27.137.229:2380,zhangjun-k8s-03=https://172.27.138.239:2380"
+export ETCD_NODES="wls-k8s-01=https://10.0.0.5:2380,wls-k8s-02=https://10.0.0.12:2380,wls-k8s-03=https://10.0.0.8:2380"
 
 # kube-apiserver 的反向代理(kube-nginx)地址端口
 export KUBE_APISERVER="https://127.0.0.1:8443"
@@ -22,25 +22,25 @@ export KUBE_APISERVER="https://127.0.0.1:8443"
 export IFACE="eth0"
 
 # etcd 数据目录
-export ETCD_DATA_DIR="/data/k8s/etcd/data"
+export ETCD_DATA_DIR="/project/k8s/etcd/data"
 
 # etcd WAL 目录，建议是 SSD 磁盘分区，或者和 ETCD_DATA_DIR 不同的磁盘分区
-export ETCD_WAL_DIR="/data/k8s/etcd/wal"
+export ETCD_WAL_DIR="/project/k8s/etcd/wal"
 
 # k8s 各组件数据目录
-export K8S_DIR="/data/k8s/k8s"
+export K8S_DIR="/project/k8s/k8s"
 
 ## DOCKER_DIR 和 CONTAINERD_DIR 二选一
 # docker 数据目录
-export DOCKER_DIR="/data/k8s/docker"
+export DOCKER_DIR="/project/k8s/docker"
 
 # containerd 数据目录
-export CONTAINERD_DIR="/data/k8s/containerd"
+export CONTAINERD_DIR="/project/k8s/containerd"
 
 ## 以下参数一般不需要修改
 
 # TLS Bootstrapping 使用的 Token，可以使用命令 head -c 16 /dev/urandom | od -An -t x | tr -d ' ' 生成
-BOOTSTRAP_TOKEN="41f7e4ba8b7be874fcff18bf5cf41a7c"
+BOOTSTRAP_TOKEN="e420b5ea9e56530969d4002ef72ca692"
 
 # 最好使用 当前未用的网段 来定义服务网段和 Pod 网段
 
