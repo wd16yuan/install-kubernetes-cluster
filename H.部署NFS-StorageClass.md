@@ -1,4 +1,4 @@
-tags: helm, docker,master
+tags: helm, docker,master,nfs,pv,pvc
 
 # H. 部署NFS-StorageClass
 
@@ -62,7 +62,7 @@ path：nfs服务共享路径
 
 provisionerName：provisioner名称（与Deployment中变量 PROVISIONER_NAME 一致）
 
-reclaimPolicy：回收策略，修改为 retain（pod，pvc被删除时，原数据不会被彻底删除）
+reclaimPolicy：回收策略，修改为 retain（pod，pvc被删除时，归档数据，原数据不会被彻底删除）
 
 serviceAccount:
 
