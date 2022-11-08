@@ -55,9 +55,9 @@
 1. [B.校验TLS证书](B.校验TLS证书.md)
 1. [C.部署metrics-server插件](C.metrics-server插件.md)
 1. [E.部署flannel网络](E.部署flannel网络.md)	
-1. [F.部署docker](#F.部署docker.md)
-1. [G.部署helm](#G.部署helm.md)
-1. [H.部署NFS-StorageClass](#H.部署NFS-StorageClass.md)
+1. [F.部署docker](F.部署docker.md)
+1. [G.部署helm](G.部署helm.md)
+1. [H.部署NFS-StorageClass](H.部署NFS-StorageClass.md)
 
 ## 在线阅读
 
