@@ -39,7 +39,7 @@ Error from server (NotFound): the server could not find the requested resource (
 
 从 github clone 源码：
 
-``` 
+``` bash
 $ cd /opt/k8s/work/
 $ git clone https://github.com/kubernetes-incubator/metrics-server.git
 $ cd metrics-server/deploy/1.8+/
@@ -85,11 +85,11 @@ replicaset.apps/metrics-server-77df59848f   1         1         1       19s
 
 ## 查看 metrics-server 输出的 metrics
 
-```
-kubectl get --raw https://172.27.138.251:6443/apis/metrics.k8s.io/v1beta1/nodes | jq .
-kubectl get --raw https://172.27.138.251:6443/apis/metrics.k8s.io/v1beta1/pods | jq .
-kubectl get --raw https://172.27.138.251:6443/apis/metrics.k8s.io/v1beta1/nodes/<node-name> | jq .
-kubectl get --raw https://172.27.138.251:6443/apis/metrics.k8s.io/v1beta1/namespace/<namespace-name>/pods/<pod-name> | jq .
+```bash
+$ kubectl get --raw https://172.27.138.251:6443/apis/metrics.k8s.io/v1beta1/nodes | jq .
+$ kubectl get --raw https://172.27.138.251:6443/apis/metrics.k8s.io/v1beta1/pods | jq .
+$ kubectl get --raw https://172.27.138.251:6443/apis/metrics.k8s.io/v1beta1/nodes/<node-name> | jq .
+$ kubectl get --raw https://172.27.138.251:6443/apis/metrics.k8s.io/v1beta1/namespace/<namespace-name>/pods/<pod-name> | jq .
 ```
 + 替换 <xxx> 为实际内容；
 + /apis/metrics.k8s.io/v1beta1/nodes 和 /apis/metrics.k8s.io/v1beta1/pods 返回的 usage 包含 CPU 和 Memory；

@@ -28,25 +28,25 @@ flannel 将分配给自己的 Pod 网段信息写入 `/run/flannel/docker` 文�
 1. 如果没有特殊指明，本文档的所有操作**均在 zhangjun-k8s01 节点上执行**，然后远程分发文件和执行命令；
 2. flanneld 与本文档部署的 etcd v3.4.x 不兼容，需要将 etcd 降级到 v3.3.x；
 3. flanneld 与 docker 结合使用；
-    
+   
 
 ## 下载和分发 flanneld 二进制文件
 
 从 flannel 的 [release 页面](https://github.com/coreos/flannel/releases) 下载最新版本的安装包：
 
 ``` bash
-cd /opt/k8s/work
-mkdir flannel
-wget https://github.com/coreos/flannel/releases/download/v0.11.0/flannel-v0.11.0-linux-amd64.tar.gz
-tar -xzvf flannel-v0.11.0-linux-amd64.tar.gz -C flannel
+$ cd /opt/k8s/work
+$ mkdir flannel
+$ wget https://github.com/coreos/flannel/releases/download/v0.11.0/flannel-v0.11.0-linux-amd64.tar.gz
+$ tar -xzvf flannel-v0.11.0-linux-amd64.tar.gz -C flannel
 ```
 
 分发二进制文件到集群所有节点：
 
 ``` bash
-cd /opt/k8s/work
-source /opt/k8s/bin/environment.sh
-for node_ip in ${NODE_IPS[@]}
+$ cd /opt/k8s/work
+$ source /opt/k8s/bin/environment.sh
+$ for node_ip in ${NODE_IPS[@]}
   do
     echo ">>> ${node_ip}"
     scp flannel/{flanneld,mk-docker-opts.sh} root@${node_ip}:/opt/k8s/bin/
@@ -61,8 +61,8 @@ flanneld 从 etcd 集群存取网段分配信息，而 etcd 集群启用了双�
 创建证书签名请求：
 
 ``` bash
-cd /opt/k8s/work
-cat > flanneld-csr.json <<EOF
+$ cd /opt/k8s/work
+$ cat > flanneld-csr.json <<EOF
 {
   "CN": "flanneld",
   "hosts": [],
@@ -87,19 +87,19 @@ EOF
 生成证书和私钥：
 
 ``` bash
-cfssl gencert -ca=/opt/k8s/work/ca.pem \
+$ cfssl gencert -ca=/opt/k8s/work/ca.pem \
   -ca-key=/opt/k8s/work/ca-key.pem \
   -config=/opt/k8s/work/ca-config.json \
   -profile=kubernetes flanneld-csr.json | cfssljson -bare flanneld
-ls flanneld*pem
+$ ls flanneld*pem
 ```
 
 将生成的证书和私钥分发到**所有节点**（master 和 worker）：
 
 ``` bash
-cd /opt/k8s/work
-source /opt/k8s/bin/environment.sh
-for node_ip in ${NODE_IPS[@]}
+$ cd /opt/k8s/work
+$ source /opt/k8s/bin/environment.sh
+$ for node_ip in ${NODE_IPS[@]}
   do
     echo ">>> ${node_ip}"
     ssh root@${node_ip} "mkdir -p /etc/flanneld/cert"
@@ -112,9 +112,9 @@ for node_ip in ${NODE_IPS[@]}
 注意：本步骤**只需执行一次**。
 
 ``` bash
-cd /opt/k8s/work
-source /opt/k8s/bin/environment.sh
-etcdctl \
+$ cd /opt/k8s/work
+$ source /opt/k8s/bin/environment.sh
+$ etcdctl \
   --endpoints=${ETCD_ENDPOINTS} \
   --ca-file=/opt/k8s/work/ca.pem \
   --cert-file=/opt/k8s/work/flanneld.pem \
@@ -127,9 +127,9 @@ etcdctl \
 ## 创建 flanneld 的 systemd unit 文件
 
 ``` bash
-cd /opt/k8s/work
-source /opt/k8s/bin/environment.sh
-cat > flanneld.service << EOF
+$ cd /opt/k8s/work
+$ source /opt/k8s/bin/environment.sh
+$ cat > flanneld.service << EOF
 [Unit]
 Description=Flanneld overlay address etcd agent
 After=network.target
@@ -168,9 +168,9 @@ EOF
 ## 分发 flanneld systemd unit 文件到**所有节点**
 
 ``` bash
-cd /opt/k8s/work
-source /opt/k8s/bin/environment.sh
-for node_ip in ${NODE_IPS[@]}
+$ cd /opt/k8s/work
+$ source /opt/k8s/bin/environment.sh
+$ for node_ip in ${NODE_IPS[@]}
   do
     echo ">>> ${node_ip}"
     scp flanneld.service root@${node_ip}:/etc/systemd/system/
@@ -180,8 +180,8 @@ for node_ip in ${NODE_IPS[@]}
 ## 启动 flanneld 服务
 
 ``` bash
-source /opt/k8s/bin/environment.sh
-for node_ip in ${NODE_IPS[@]}
+$ source /opt/k8s/bin/environment.sh
+$ for node_ip in ${NODE_IPS[@]}
   do
     echo ">>> ${node_ip}"
     ssh root@${node_ip} "systemctl daemon-reload && systemctl enable flanneld && systemctl restart flanneld"
@@ -191,8 +191,8 @@ for node_ip in ${NODE_IPS[@]}
 ## 检查启动结果
 
 ``` bash
-source /opt/k8s/bin/environment.sh
-for node_ip in ${NODE_IPS[@]}
+$ source /opt/k8s/bin/environment.sh
+$ for node_ip in ${NODE_IPS[@]}
   do
     echo ">>> ${node_ip}"
     ssh root@${node_ip} "systemctl status flanneld|grep Active"
@@ -202,7 +202,7 @@ for node_ip in ${NODE_IPS[@]}
 确保状态为 `active (running)`，否则查看日志，确认原因：
 
 ``` bash
-journalctl -u flanneld
+$ journalctl -u flanneld
 ```
 
 ## 检查分配给各 flanneld 的 Pod 网段信息
@@ -210,8 +210,8 @@ journalctl -u flanneld
 查看集群 Pod 网段(/16)：
 
 ``` bash
-source /opt/k8s/bin/environment.sh
-etcdctl \
+$ source /opt/k8s/bin/environment.sh
+$ etcdctl \
   --endpoints=${ETCD_ENDPOINTS} \
   --ca-file=/etc/kubernetes/cert/ca.pem \
   --cert-file=/etc/flanneld/cert/flanneld.pem \
@@ -226,13 +226,13 @@ etcdctl \
 查看已分配的 Pod 子网段列表(/24):
 
 ``` bash
-source /opt/k8s/bin/environment.sh
-etcdctl \
+$ source /opt/k8s/bin/environment.sh
+$ etcdctl \
   --endpoints=${ETCD_ENDPOINTS} \
   --ca-file=/etc/kubernetes/cert/ca.pem \
   --cert-file=/etc/flanneld/cert/flanneld.pem \
   --key-file=/etc/flanneld/cert/flanneld-key.pem \
-  ls ${FLANNEL_ETCD_PREFIX}/subnets
+$ ls ${FLANNEL_ETCD_PREFIX}/subnets
 ```
 
 输出（结果视部署情况而定）：
@@ -246,8 +246,8 @@ etcdctl \
 查看某一 Pod 网段对应的节点 IP 和 flannel 接口地址:
 
 ``` bash
-source /opt/k8s/bin/environment.sh
-etcdctl \
+$ source /opt/k8s/bin/environment.sh
+$ etcdctl \
   --endpoints=${ETCD_ENDPOINTS} \
   --ca-file=/etc/kubernetes/cert/ca.pem \
   --cert-file=/etc/flanneld/cert/flanneld.pem \
@@ -265,7 +265,7 @@ etcdctl \
 ## 检查节点 flannel 网络信息
 
 ``` bash
-[root@zhangjun-k8s01 work]# ip addr show
+$ ip addr show
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
     link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
     inet 127.0.0.1/8 scope host lo
@@ -282,7 +282,7 @@ etcdctl \
 + flannel.1 网卡的地址为分配的 Pod 子网段的第一个 IP（.0），且是 /32 的地址；
 
 ``` bash
-[root@zhangjun-k8s01 work]# ip route show |grep flannel.1
+$ ip route show |grep flannel.1
 172.30.32.0/24 via 172.30.32.0 dev flannel.1 onlink
 172.30.184.0/24 via 172.30.184.0 dev flannel.1 onlink
 ```
@@ -294,8 +294,8 @@ etcdctl \
 在**各节点上部署** flannel 后，检查是否创建了 flannel 接口(名称可能为 flannel0、flannel.0、flannel.1 等)：
 
 ``` bash
-source /opt/k8s/bin/environment.sh
-for node_ip in ${NODE_IPS[@]}
+$ source /opt/k8s/bin/environment.sh
+$ for node_ip in ${NODE_IPS[@]}
   do
     echo ">>> ${node_ip}"
     ssh ${node_ip} "/usr/sbin/ip addr show flannel.1|grep -w inet"
@@ -316,8 +316,8 @@ for node_ip in ${NODE_IPS[@]}
 在各节点上 ping 所有 flannel 接口 IP，确保能通：
 
 ``` bash
-source /opt/k8s/bin/environment.sh
-for node_ip in ${NODE_IPS[@]}
+$ source /opt/k8s/bin/environment.sh
+$ for node_ip in ${NODE_IPS[@]}
   do
     echo ">>> ${node_ip}"
     ssh ${node_ip} "ping -c 1 172.30.80.0"
