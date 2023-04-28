@@ -1,0 +1,13 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: tencent-cfs
+parameters:
+  subdir-share: "true" 
+  vpcid: vpc-xxxxx
+  subnetid: subnet-xxxxx
+  vers: "4" # or 3
+  resourcetags: ""
+provisioner: com.tencent.cloud.csi.cfs
+reclaimPolicy: Retain
+volumeBindingMode: Immediate

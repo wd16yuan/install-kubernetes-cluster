@@ -48,9 +48,12 @@
     1. [08-2.coredns插件](08-2.coredns插件.md)
     1. [08-3.dashboard插件](08-3.dashboard插件.md)
     1. [08-4.kube-prometheus插件](08-4.kube-prometheus插件.md)
-	1. [08-5.Loki插件](08-5.Loki插件.md)			
+	1. [08-5.Loki插件](08-5.Loki插件.md)	
+	   1. [08-5.1.日志告警](08-5.1.日志告警.md)	
+	1. [08-6.自动扩容](08-6.自动扩容.md)	
 1. [09.部署Harbor-Registry](09.部署Harbor-Registry.md)	
 1. [10.清理集群](10.清理集群.md)	
+1. [11-1.持久存储-CFS](11-1.持久存储-CFS.md)	
 1. [A.浏览器访问apiserver安全端口](A.浏览器访问kube-apiserver安全端口.md)
 1. [B.校验TLS证书](B.校验TLS证书.md)
 1. [C.部署metrics-server插件](C.metrics-server插件.md)
@@ -58,6 +61,7 @@
 1. [F.部署docker](F.部署docker.md)
 1. [G.部署helm](G.部署helm.md)
 1. [H.部署NFS-StorageClass](H.部署NFS-StorageClass.md)
+1. [I.Ubuntu内核版本切换](I.Ubuntu内核版本切换.md)
 
 ## 在线阅读
 

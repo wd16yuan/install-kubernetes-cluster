@@ -1,0 +1,91 @@
+# This YAML file contains driver-registrar & csi driver nodeplugin API objects
+# that are necessary to run CSI nodeplugin for cfs
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: csi-nodeplugin-cfsplugin
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: csi-nodeplugin-cfsplugin
+  template:
+    metadata:
+      labels:
+        app: csi-nodeplugin-cfsplugin
+    spec:
+      tolerations:
+        - operator: Exists
+      serviceAccount: csi-cfs-tencentcloud
+      hostNetwork: true
+      priorityClassName: system-cluster-critical
+      hostAliases:
+        - ip: "169.254.0.23"
+          hostnames:
+            - "metadata.tencentyun.com"
+      containers:
+        - name: driver-registrar
+          image: ccr.ccs.tencentyun.com/tkeimages/csi-node-driver-registrar:v2.0.1
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "rm -rf /registration/com.tencent.cloud.csi.cfs /registration/com.tencent.cloud.csi.cfs-reg.sock"]
+          args:
+            - "--v=5"
+            - "--csi-address=$(ADDRESS)"
+            - "--kubelet-registration-path=/project/k8s/k8s/kubelet/plugins/com.tencent.cloud.csi.cfs/csi.sock"
+          env:
+            - name: ADDRESS
+              value: /plugin/csi.sock
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          volumeMounts:
+            - name: plugin-dir
+              mountPath: /plugin
+            - name: registration-dir
+              mountPath: /registration
+        - name: cfs
+          securityContext:
+            privileged: true
+            capabilities:
+              add: ["SYS_ADMIN"]
+            allowPrivilegeEscalation: true
+          image: ccr.ccs.tencentyun.com/tkeimages/csi-tencentcloud-cfs:v2.0.6
+          imagePullPolicy: "Always"
+          args :
+            - "--nodeID=$(NODE_ID)"
+            - "--endpoint=$(CSI_ENDPOINT)"
+            - "--component_type=node"
+          env:
+            - name: NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: CSI_ENDPOINT
+              value: unix://plugin/csi.sock
+          volumeMounts:
+            - name: plugin-dir
+              mountPath: /plugin
+            - name: pods-mount-dir
+              mountPath: /project/k8s/k8s/kubelet/pods
+              mountPropagation: "Bidirectional"
+      volumes:
+        - name: plugin-dir
+          hostPath:
+            path: /project/k8s/k8s/kubelet/plugins/com.tencent.cloud.csi.cfs
+            type: DirectoryOrCreate
+        - name: pods-mount-dir
+          hostPath:
+            path: /project/k8s/k8s/kubelet/pods
+            type: Directory
+        - name: registration-dir
+          hostPath:
+            path: /project/k8s/k8s/kubelet/plugins_registry
+            type: Directory
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 100%
+    type: RollingUpdate
+

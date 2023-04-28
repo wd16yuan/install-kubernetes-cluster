@@ -1,0 +1,105 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: csi-provisioner-cfsplugin
+  namespace: kube-system
+  labels:
+    app: csi-provisioner-cfsplugin
+spec:
+  selector:
+    app: csi-provisioner-cfsplugin
+  ports:
+    - name: dummy
+      port: 12346
+
+---
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: csi-provisioner-cfsplugin
+  namespace: kube-system
+spec:
+  serviceName: csi-provisioner-cfsplugin
+  replicas: 1
+  selector:
+    matchLabels:
+      app: csi-provisioner-cfsplugin
+  template:
+    metadata:
+      labels:
+        app: csi-provisioner-cfsplugin
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node.kubernetes.io/instance-type
+                    operator: NotIn
+                    values:
+                      - CHC
+                      - external
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - wls-k8s-01
+                      - wls-k8s-02
+                      - wls-k8s-03
+      serviceAccount: csi-cfs-tencentcloud
+      priorityClassName: system-cluster-critical
+      hostAliases:
+        - ip: "169.254.0.23"
+          hostnames:
+            - "metadata.tencentyun.com"
+        - ip: "169.254.0.95"
+          hostnames:
+            - "cfs.internal.tencentcloudapi.com"
+            - "cfs.test.tencentcloudapi.com"
+      containers:
+        - name: csi-provisioner
+          image: ccr.ccs.tencentyun.com/tkeimages/csi-provisioner:v2.0.4
+          args:
+            - "--csi-address=$(ADDRESS)"
+            - "--v=3"
+            - "--timeout=120s"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          imagePullPolicy: "Always"
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/csi/sockets/pluginproxy/
+        - name: cfs
+          image: ccr.ccs.tencentyun.com/tkeimages/csi-tencentcloud-cfs:v2.0.6
+          args:
+            - "--nodeID=$(NODE_ID)"
+            - "--endpoint=$(CSI_ENDPOINT)"
+            - "--component_type=controller"
+          env:
+            - name: NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: CSI_ENDPOINT
+              value: unix://plugin/csi.sock
+            - name: TENCENTCLOUD_API_SECRET_ID
+              valueFrom:
+                secretKeyRef:
+                  name: cfs-csi-api-key
+                  key: TENCENTCLOUD_CFS_API_SECRET_ID
+                  optional: true
+            - name: TENCENTCLOUD_API_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: cfs-csi-api-key
+                  key: TENCENTCLOUD_CFS_API_SECRET_KEY
+                  optional: true
+          imagePullPolicy: "Always"
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /plugin
+      volumes:
+        - name: socket-dir
+          emptyDir:
+
