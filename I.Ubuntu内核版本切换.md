@@ -1,6 +1,6 @@
 tags: ubuntu,kernel
 
-# G. Ubuntu内核版本切换
+# I. Ubuntu内核版本切换
 
 1.查看当前版本
 
