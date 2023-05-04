@@ -62,6 +62,7 @@
 1. [G.部署helm](G.部署helm.md)
 1. [H.部署NFS-StorageClass](H.部署NFS-StorageClass.md)
 1. [I.Ubuntu内核版本切换](I.Ubuntu内核版本切换.md)
+1. [J.用户权限查询](J.用户权限查询.md)
 
 ## 在线阅读
 
